@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-
+app.set('trust proxy', 1);
 const PORT = Number(process.env.PORT || 3000);
 
 const JWT_SECRET = process.env.JWT_SECRET;
