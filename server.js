@@ -27,7 +27,10 @@ function tokenFor(u){return jwt.sign({id:u.id,role:'user'},JWT_SECRET,{expiresIn
 function auth(req,res,next){try{const h=req.headers.authorization||'';const t=h.startsWith('Bearer ')?h.slice(7):'';req.user=jwt.verify(t,JWT_SECRET);next();}catch{res.status(401).json({error:'Unauthorized'});}}
 function admin(req,res,next){if(req.headers['x-admin-token']!=='demo-admin-token')return res.status(401).json({error:'Admin authentication required'});next();}
 app.use(express.json());
-app.use(express.static(path.join(__dirname,'public')));
+app.get('/', (req,res)=>res.sendFile(path.join(__dirname,'index.html')));
+app.get('/index.html', (req,res)=>res.sendFile(path.join(__dirname,'index.html')));
+app.get('/app.js', (req,res)=>res.type('application/javascript').sendFile(path.join(__dirname,'app.js')));
+app.get('/style.css', (req,res)=>res.type('text/css').sendFile(path.join(__dirname,'style.css')));
 
 app.post('/api/send-otp',(req,res)=>res.json({message:'Demo OTP sent',otp:'123456'}));
 app.post('/api/register',async(req,res)=>{
@@ -62,5 +65,5 @@ app.get('/api/admin/requests',admin,(req,res)=>res.json(db.requests.slice().sort
 app.post('/api/admin/request/:id',admin,(req,res)=>{const {action}=req.body||{};const r=db.requests.find(x=>x.id===Number(req.params.id));if(!r||!['Approve','Reject'].includes(action)||r.status!=='Pending')return res.status(400).json({error:'Invalid request'});const u=db.users.find(x=>x.id===r.user_id);if(action==='Approve'&&r.type==='deposit')u.balance+=r.amount;if(action==='Reject'&&r.type==='withdrawal')u.balance+=r.amount;r.status=action==='Approve'?'Approved':'Rejected';save();res.json({ok:true});});
 app.get('/api/admin/gifts',admin,(req,res)=>res.json(db.gifts.map(g=>({...g,claims:db.giftClaims.filter(c=>c.gift_id===g.id).length}))));
 app.post('/api/admin/gifts',admin,(req,res)=>{const {code,amount}=req.body||{};const c=String(code||'').trim().toUpperCase();if(!c||!Number.isInteger(amount)||amount<1||db.gifts.some(g=>g.code===c))return res.status(400).json({error:'Invalid or duplicate gift'});const g={id:db.next.gift++,code:c,amount,active:1,created_at:now()};db.gifts.push(g);save();res.json({id:g.id});});
-app.get('/{*splat}',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
+app.get('/{*splat}',(req,res)=>res.sendFile(path.join(__dirname,'index.html')));
 app.listen(PORT,()=>console.log(`ColorWin demo running on http://localhost:${PORT}`));
