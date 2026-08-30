@@ -1,0 +1,305 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f3f6fb;
+  color: #222;
+  min-height: 100vh;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+/* Main app */
+.shell {
+  min-height: 100vh;
+  background: #f3f6fb;
+}
+
+.top {
+  background: #07844d;
+  color: white;
+  padding: 18px 16px;
+  text-align: center;
+}
+
+.brand {
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.card {
+  background: white;
+  border-radius: 18px;
+  margin: 14px;
+  padding: 16px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.08);
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Inputs */
+.input {
+  width: 100%;
+  border: 1px solid #d9dee7;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 13px;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #07844d;
+}
+
+/* Buttons */
+.btn {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  padding: 13px;
+  background: #07844d;
+  color: white;
+  font-weight: 700;
+}
+
+.btn:hover {
+  opacity: .92;
+}
+
+.btn.secondary {
+  background: white;
+  color: #07844d;
+  border: 1px solid #07844d;
+}
+
+.btn.gray {
+  background: #eef1f5;
+  color: #333;
+}
+
+/* Login */
+.auth {
+  max-width: 520px;
+  margin: 25px auto;
+}
+
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 15px;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  font-weight: 700;
+  color: #777;
+}
+
+.auth-tab.active {
+  color: #07844d;
+  border-bottom: 2px solid #07844d;
+}
+
+/* Wallet */
+.wallet {
+  background: linear-gradient(135deg, #07844d, #0aa35f);
+  color: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 15px;
+}
+
+.wallet small {
+  opacity: .85;
+}
+
+.balance {
+  font-size: 30px;
+  font-weight: 800;
+  margin-top: 7px;
+}
+
+/* Navigation */
+.nav {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  background: white;
+  border-top: 1px solid #ddd;
+  padding: 8px 4px;
+  z-index: 20;
+}
+
+.nav button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  padding: 8px 3px;
+  color: #777;
+  font-size: 12px;
+}
+
+.nav button.active {
+  color: #07844d;
+  font-weight: 700;
+}
+
+/* Game */
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.game {
+  background: white;
+  border-radius: 14px;
+  padding: 15px;
+  text-align: center;
+  box-shadow: 0 3px 12px rgba(0,0,0,.06);
+}
+
+.game h3 {
+  margin-bottom: 8px;
+}
+
+.timer {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 10px;
+}
+
+.bet-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* Numbers */
+.number-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.number {
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 9px;
+  padding: 10px 4px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.number.selected {
+  background: #07844d;
+  color: white;
+  border-color: #07844d;
+}
+
+/* Transactions */
+.transaction {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.transaction:last-child {
+  border-bottom: 0;
+}
+
+.plus {
+  color: #07844d;
+  font-weight: 700;
+}
+
+.minus {
+  color: #d33;
+  font-weight: 700;
+}
+
+/* Admin */
+.admin-header {
+  background: #151922;
+  color: white;
+  padding: 18px;
+}
+
+.admin-card {
+  background: white;
+  margin: 12px;
+  padding: 15px;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.07);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.stat {
+  background: #f7f8fa;
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.stat strong {
+  display: block;
+  font-size: 22px;
+  margin-top: 5px;
+}
+
+/* Notice */
+.notice {
+  background: #fff8df;
+  border: 1px solid #f0df9a;
+  color: #6b5600;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+/* Responsive */
+@media (min-width: 700px) {
+  .auth {
+    margin-top: 60px;
+  }
+
+  .game-grid {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 900px;
+    margin: auto;
+  }
+}
