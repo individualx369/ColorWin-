@@ -65,5 +65,5 @@ app.get('/api/admin/requests',admin,(req,res)=>res.json(db.requests.slice().sort
 app.post('/api/admin/request/:id',admin,(req,res)=>{const {action}=req.body||{};const r=db.requests.find(x=>x.id===Number(req.params.id));if(!r||!['Approve','Reject'].includes(action)||r.status!=='Pending')return res.status(400).json({error:'Invalid request'});const u=db.users.find(x=>x.id===r.user_id);if(action==='Approve'&&r.type==='deposit')u.balance+=r.amount;if(action==='Reject'&&r.type==='withdrawal')u.balance+=r.amount;r.status=action==='Approve'?'Approved':'Rejected';save();res.json({ok:true});});
 app.get('/api/admin/gifts',admin,(req,res)=>res.json(db.gifts.map(g=>({...g,claims:db.giftClaims.filter(c=>c.gift_id===g.id).length}))));
 app.post('/api/admin/gifts',admin,(req,res)=>{const {code,amount}=req.body||{};const c=String(code||'').trim().toUpperCase();if(!c||!Number.isInteger(amount)||amount<1||db.gifts.some(g=>g.code===c))return res.status(400).json({error:'Invalid or duplicate gift'});const g={id:db.next.gift++,code:c,amount,active:1,created_at:now()};db.gifts.push(g);save();res.json({id:g.id});});
-app.get('/{*splat}',(req,res)=>res.sendFile(path.join(__dirname,'index.html')));
+app.get('/{*splat}',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
 app.listen(PORT,()=>console.log(`ColorWin demo running on http://localhost:${PORT}`));
