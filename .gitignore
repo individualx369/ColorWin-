@@ -3,7 +3,6 @@ node_modules/
 .env.*
 !.env.example
 
-db/*.json
-
+db/
+*.log
 .DS_Store
-npm-debug.log*
