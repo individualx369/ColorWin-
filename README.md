@@ -1,35 +1,23 @@
-# ColorWin — Full-stack demo
+# ColorWin — StackBlitz-compatible virtual-credit demo
 
-A mobile-first, BG678/WinGo-inspired **virtual-credit demo** with a user/admin loop. It intentionally does **not** process real-money gambling, real UPI deposits, cash withdrawals, or payment settlement.
-
-## Included
-- Phone/email login + registration with demo OTP
-- Virtual wallet and transaction ledger
-- Independent 30s / 1m / 3m / 5m game timers
-- Color / number / Big-Small virtual bets
-- Round settlement + history
-- Gift code redemption (`GIFT50` seeded)
-- Demo deposit/withdrawal requests using virtual credits only
-- Hidden `/admin-login` route with environment-configured admin credentials
-- Admin overview, request approval/rejection, gift-code manager
-- SQLite persistence
-- Responsive UI matching the supplied visual direction
+This is a mobile-first BG678/WinGo-inspired **virtual-credit simulation**. It does not process real-money gambling, real UPI deposits, cash withdrawals, or payment settlement.
 
 ## Run
+
 ```bash
 npm install
-ADMIN_USER=admin ADMIN_PASSWORD='change-me' JWT_SECRET='replace-this' npm start
-```
-Open `http://localhost:3000`.
-
-For development:
-```bash
-npm run dev
+npm start
 ```
 
-## Demo admin
-If env vars are omitted, the development fallback is `admin / admin-demo-only`.
-Change this before any deployment.
+StackBlitz WebContainer is supported: this version intentionally does **not** use native SQLite/better-sqlite3. Data is stored in `db/colorwin.json`.
+
+## Demo
+- OTP: `123456`
+- Gift: `GIFT50` (₹50 virtual credit)
+- Admin route: `/admin-login`
+- Default demo admin: `admin / admin-demo-only`
+
+For deployment, set `ADMIN_USER`, `ADMIN_PASSWORD`, and `JWT_SECRET` as environment variables.
 
 ## Important
-This project is deliberately a **virtual-credit simulation**. The payment QR/UPI details from the reference image are not wired into the application, and no real-money gambling/payment flow is implemented.
+Virtual credits only. No real-money betting, payment processing, UPI settlement, or cash withdrawal is implemented.
