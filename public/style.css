@@ -17,3 +17,344 @@
 .admin{min-height:100vh;background:#101713}.admin .shell{background:#f1f4f2}.admin .top{background:#151d18}.statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.stat{background:#fff;border-radius:15px;padding:14px;box-shadow:var(--shadow)}.stat b{font-size:22px;display:block;margin-top:4px}.adminrow{padding:12px 0;border-bottom:1px solid var(--line)}
 .toast{position:fixed;left:50%;bottom:85px;transform:translateX(-50%);background:#17201c;color:#fff;padding:11px 15px;border-radius:10px;z-index:99;box-shadow:0 8px 25px #0003}
 @media(min-width:700px){.shell{box-shadow:0 0 35px #0000000b}.auth{margin-top:55px}}
+/* =========================
+   COLORWIN AUTH UI FIX
+========================= */
+
+.auth{
+  min-height:100vh;
+  max-width:520px;
+  margin:0 auto;
+  background:#f3f6f5;
+  padding-bottom:30px;
+}
+
+.authbrand{
+  background:linear-gradient(135deg,#057b49,#13aa66);
+  color:#fff;
+  font-size:30px;
+  font-weight:950;
+  text-align:center;
+  padding:28px 20px 35px;
+  border-radius:0 0 30px 30px;
+}
+
+.authbox{
+  background:#fff;
+  margin:18px 12px;
+  padding:20px 16px;
+  border-radius:22px;
+  box-shadow:0 7px 25px rgba(13,37,25,.08);
+}
+
+.authbox h2{
+  margin:0 0 20px;
+  font-size:25px;
+  color:#18201d;
+}
+
+.label{
+  display:block;
+  margin:15px 0 7px;
+  font-size:14px;
+  font-weight:850;
+  color:#56625c;
+}
+
+.field{
+  width:100%;
+  height:52px;
+  border:1px solid #dce4df;
+  background:#fafcfc;
+  border-radius:13px;
+  padding:0 14px;
+  outline:none;
+  color:#18201d;
+  font-size:16px;
+}
+
+.field:focus{
+  border-color:#07884f;
+  box-shadow:0 0 0 3px rgba(7,136,79,.10);
+}
+
+.field::placeholder{
+  color:#9aa39f;
+}
+
+.auth-tabs{
+  display:flex;
+  border-bottom:1px solid #e3e9e6;
+  margin:-5px 0 20px;
+}
+
+.auth-tab{
+  flex:1;
+  background:none;
+  color:#89928e;
+  padding:13px 5px;
+  font-size:15px;
+  font-weight:850;
+  border-bottom:3px solid transparent;
+}
+
+.auth-tab.active{
+  color:#07884f;
+  border-bottom-color:#07884f;
+}
+
+.mini{
+  font-size:12px;
+  color:#78827d;
+  line-height:1.5;
+}
+
+.nav{
+  background:none;
+  color:#07884f;
+  font-weight:850;
+  border:0;
+  padding:5px;
+}
+
+.authbox .btn{
+  min-height:50px;
+  font-size:15px;
+}
+
+.authbox .outline{
+  background:#fff;
+  border:1px solid #07884f;
+  color:#07884f;
+}
+
+.authbox .primary{
+  background:#07884f;
+  color:#fff;
+}
+
+.authbox .row{
+  align-items:stretch;
+}
+
+.authbox .row .field{
+  min-width:0;
+}
+
+.authbox input[type="checkbox"]{
+  width:18px;
+  height:18px;
+  accent-color:#07884f;
+  vertical-align:middle;
+  margin-right:5px;
+}
+
+#otpStatus{
+  padding:9px 11px;
+  background:#f0f8f4;
+  border-radius:9px;
+}
+
+#otp{
+  letter-spacing:4px;
+  font-weight:800;
+}
+
+#send{
+  flex:0 0 105px;
+}
+
+#verifyOtp{
+  margin-bottom:5px;
+}
+
+@media(max-width:380px){
+  .authbox{
+    margin:14px 9px;
+    padding:17px 13px;
+  }
+
+  .authbrand{
+    font-size:27px;
+  }
+
+  .auth-tab{
+    font-size:13px;
+  }
+
+  #send{
+    flex:0 0 90px;
+  }
+}
+
+
+/* =========================
+   DASHBOARD CLASS FIXES
+========================= */
+
+.wallet{
+  background:rgba(0,0,0,.12);
+  border-radius:18px;
+  padding:15px;
+}
+
+.balance{
+  font-size:32px;
+  font-weight:950;
+  margin-top:4px;
+}
+
+.tabs{
+  display:flex;
+  gap:8px;
+  overflow-x:auto;
+  padding:12px;
+  scrollbar-width:none;
+}
+
+.tabs::-webkit-scrollbar{
+  display:none;
+}
+
+.tab{
+  flex:0 0 auto;
+  background:#e9efec;
+  color:#59645f;
+  border-radius:11px;
+  padding:10px 12px;
+  font-weight:850;
+}
+
+.tab.active{
+  background:#07884f;
+  color:#fff;
+}
+
+.gamehead{
+  background:linear-gradient(135deg,#06462f,#09985b);
+  color:#fff;
+}
+
+.colorrow{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:9px;
+}
+
+.colorbtn{
+  border-radius:13px;
+  padding:14px 5px;
+  color:#fff;
+  font-weight:900;
+}
+
+.colorbtn small{
+  display:block;
+  opacity:.85;
+  margin-top:3px;
+}
+
+.colorbtn.green{
+  background:#38b77a;
+}
+
+.colorbtn.red{
+  background:#f0525e;
+}
+
+.colorbtn.violet{
+  background:#9557e7;
+}
+
+.colorbtn.selected,
+.ball.selected,
+.sizebtn.selected{
+  outline:3px solid #07884f;
+  outline-offset:2px;
+}
+
+.betgrid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:9px;
+}
+
+.ball{
+  aspect-ratio:1;
+  border-radius:50%;
+  color:#fff;
+  font-weight:950;
+  font-size:16px;
+}
+
+.ball.green{
+  background:#38b77a;
+}
+
+.ball.red{
+  background:#f0525e;
+}
+
+.ball.mix{
+  background:linear-gradient(
+    135deg,
+    #f0525e 50%,
+    #9557e7 50%
+  );
+}
+
+.chips{
+  display:flex;
+  gap:7px;
+  overflow-x:auto;
+  padding-bottom:4px;
+}
+
+.chip{
+  flex:0 0 auto;
+  background:#edf2ef;
+  color:#4e5954;
+  border-radius:10px;
+  padding:10px 13px;
+  font-weight:850;
+}
+
+.chip.on{
+  background:#07884f;
+  color:#fff;
+}
+
+.sizerow{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+  margin-top:12px;
+}
+
+.sizebtn{
+  padding:13px 5px;
+  border-radius:12px;
+  color:#fff;
+  font-weight:900;
+}
+
+.sizebtn.orange{
+  background:#f3a623;
+}
+
+.sizebtn.blue{
+  background:#4b8fe5;
+}
+
+.tablewrap{
+  overflow-x:auto;
+}
+
+.history{
+  min-width:450px;
+}
+
+.btn:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
