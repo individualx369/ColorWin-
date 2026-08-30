@@ -1089,45 +1089,46 @@ function profilePage() {
 function adminLogin() {
   return `
     <div class="auth">
-
       <div class="authbrand">
         ColorWin Admin
       </div>
 
       <div class="authbox">
+        <h2>Secure admin login</h2>
 
-        <h2>
-          Secure admin login
-        </h2>
-
+        <div class="label">Username</div>
         <input
           id="au"
           class="field"
-          placeholder="Username">
+          placeholder="Username"
+          autocomplete="username">
 
+        <div class="label">Password</div>
         <input
           id="ap"
           class="field"
           type="password"
-          placeholder="Password">
+          placeholder="Password"
+          autocomplete="current-password">
 
         <button
           id="adminLogin"
           class="btn primary"
-          style="width:100%">
-          Enter
+          style="width:100%;margin-top:18px">
+          Login
         </button>
 
-        <p class="mini">
-          Admin authentication is handled
-          by the server.
-        </p>
-
+        <button
+          id="backUser"
+          class="btn outline"
+          style="width:100%;margin-top:10px">
+          Back
+        </button>
       </div>
-
     </div>
   `;
 }
+
 
 /* =========================
    ADMIN
@@ -1136,66 +1137,384 @@ function adminLogin() {
 function admin() {
   return `
     <div class="admin">
+      <div class="shell">
 
-      <div class="row">
+        <div class="top">
+          <div class="row">
+            <div>
+              <div class="brand">ColorWin Admin</div>
+              <div class="sub">Administration panel</div>
+            </div>
 
-        <div>
-
-          <h1>
-            ColorWin Admin
-          </h1>
-
-          <div class="mini">
-            Virtual-credit demo controls
+            <button
+              id="adminLogout"
+              class="iconbtn">
+              Logout
+            </button>
           </div>
-
         </div>
 
-        <button
-          id="adminOut"
-          class="btn outline">
-          Exit
-        </button>
+        <div class="tabs">
+          <button
+            class="tab ${
+              state.adminTab === 'overview'
+                ? 'active'
+                : ''
+            }"
+            data-admin-tab="overview">
+            Overview
+          </button>
+
+          <button
+            class="tab ${
+              state.adminTab === 'requests'
+                ? 'active'
+                : ''
+            }"
+            data-admin-tab="requests">
+            Requests
+          </button>
+
+          <button
+            class="tab ${
+              state.adminTab === 'gifts'
+                ? 'active'
+                : ''
+            }"
+            data-admin-tab="gifts">
+            Gifts
+          </button>
+        </div>
+
+        ${
+          state.adminTab === 'overview'
+            ? adminOverview()
+            : state.adminTab === 'requests'
+              ? adminRequests()
+              : adminGifts()
+        }
 
       </div>
-
-      <div class="adminnav">
-
-        ${[
-          'overview',
-          'requests',
-          'gifts'
-        ]
-          .map(
-            tab => `
-              <button
-                class="admintab ${
-                  state.adminTab === tab
-                    ? 'active'
-                    : ''
-                }"
-                data-admintab="${tab}">
-                ${tab}
-              </button>
-            `
-          )
-          .join('')}
-
-      </div>
-
-      <div id="adminbody">
-        Loading…
-      </div>
-
     </div>
   `;
 }
 
+
+function adminOverview() {
+  return `
+    <div class="card">
+      <div class="section-title">
+        <h3>Overview</h3>
+        <span class="small">ColorWin</span>
+      </div>
+
+      <div id="adminStats">
+        <div class="mini">Loading...</div>
+      </div>
+    </div>
+  `;
+}
+
+
+function adminRequests() {
+  return `
+    <div class="card">
+      <div class="section-title">
+        <h3>Deposit / Withdrawal Requests</h3>
+      </div>
+
+      <div id="adminRequests">
+        <div class="mini">Loading...</div>
+      </div>
+    </div>
+  `;
+}
+
+
+function adminGifts() {
+  return `
+    <div class="card">
+      <div class="section-title">
+        <h3>Gift Codes</h3>
+      </div>
+
+      <div class="row">
+        <input
+          id="giftCode"
+          class="field"
+          placeholder="Gift code">
+
+        <input
+          id="giftAmount"
+          class="field"
+          type="number"
+          min="1"
+          placeholder="Amount">
+      </div>
+
+      <button
+        id="createGift"
+        class="btn primary"
+        style="margin-top:10px">
+        Create Gift
+      </button>
+
+      <div
+        id="adminGiftsList"
+        style="margin-top:15px">
+        <div class="mini">Loading...</div>
+      </div>
+    </div>
+  `;
+}
+
+
 /* =========================
-   GAME
+   ADMIN API
+========================= */
+
+async function adminApi(url, options = {}) {
+  const token = state.adminToken;
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(options.headers || {})
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers
+  });
+
+  const data =
+    await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      data.error || 'Admin request failed'
+    );
+  }
+
+  return data;
+}
+
+
+async function loadAdminOverview() {
+  try {
+    const data =
+      await adminApi('/api/admin/overview');
+
+    const box = $('#adminStats');
+
+    if (!box) return;
+
+    box.innerHTML = `
+      <div class="statgrid">
+
+        <div class="stat">
+          <div class="small">Owner</div>
+          <b>${esc(data.owner)}</b>
+        </div>
+
+        <div class="stat">
+          <div class="small">Users</div>
+          <b>${esc(data.users)}</b>
+        </div>
+
+        <div class="stat">
+          <div class="small">Deposits</div>
+          <b>₹${(
+            Number(data.deposits || 0) / 100
+          ).toFixed(2)}</b>
+        </div>
+
+        <div class="stat">
+          <div class="small">Withdrawals</div>
+          <b>₹${(
+            Number(data.withdrawals || 0) / 100
+          ).toFixed(2)}</b>
+        </div>
+
+        <div class="stat">
+          <div class="small">Profit</div>
+          <b>₹${(
+            Number(data.profit || 0) / 100
+          ).toFixed(2)}</b>
+        </div>
+
+      </div>
+    `;
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+
+async function loadAdminRequests() {
+  try {
+    const data =
+      await adminApi('/api/admin/requests');
+
+    const box = $('#adminRequests');
+
+    if (!box) return;
+
+    if (!data.length) {
+      box.innerHTML =
+        `<div class="mini">No requests found.</div>`;
+      return;
+    }
+
+    box.innerHTML = data.map(request => `
+      <div class="adminrow">
+
+        <b>
+          ${esc(request.type)}
+        </b>
+
+        <div class="small">
+          User:
+          ${esc(request.user_code || '—')}
+        </div>
+
+        <div class="small">
+          Phone:
+          ${esc(request.phone || '—')}
+        </div>
+
+        <div class="small">
+          Amount:
+          ₹${(
+            Number(request.amount || 0) / 100
+          ).toFixed(2)}
+        </div>
+
+        <div class="small">
+          Status:
+          ${esc(request.status)}
+        </div>
+
+        ${
+          request.utr
+            ? `
+              <div class="small">
+                UTR: ${esc(request.utr)}
+              </div>
+            `
+            : ''
+        }
+
+        ${
+          request.status === 'Pending'
+            ? `
+              <div
+                class="row"
+                style="margin-top:9px">
+
+                <button
+                  class="btn primary"
+                  data-request-action="Approve"
+                  data-request-id="${request.id}">
+                  Approve
+                </button>
+
+                <button
+                  class="btn danger"
+                  data-request-action="Reject"
+                  data-request-id="${request.id}">
+                  Reject
+                </button>
+
+              </div>
+            `
+            : ''
+        }
+
+      </div>
+    `).join('');
+
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+
+async function loadAdminGifts() {
+  try {
+    const data =
+      await adminApi('/api/admin/gifts');
+
+    const box = $('#adminGiftsList');
+
+    if (!box) return;
+
+    if (!data.length) {
+      box.innerHTML =
+        `<div class="mini">No gift codes.</div>`;
+      return;
+    }
+
+    box.innerHTML = data.map(gift => `
+      <div class="adminrow">
+
+        <b>${esc(gift.code)}</b>
+
+        <div class="small">
+          Amount:
+          ₹${(
+            Number(gift.amount || 0) / 100
+          ).toFixed(2)}
+        </div>
+
+        <div class="small">
+          Claims:
+          ${esc(gift.claims)}
+        </div>
+
+        <div class="small">
+          Status:
+          ${
+            gift.active
+              ? 'Active'
+              : 'Inactive'
+          }
+        </div>
+
+      </div>
+    `).join('');
+
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+
+async function adminBind() {
+  if (state.adminTab === 'overview') {
+    await loadAdminOverview();
+  }
+
+  if (state.adminTab === 'requests') {
+    await loadAdminRequests();
+  }
+
+  if (state.adminTab === 'gifts') {
+    await loadAdminGifts();
+  }
+}
+
+
+/* =========================
+   NORMAL APP ACTIONS
 ========================= */
 
 async function loadGame() {
+  if (!state.user) return;
+
   try {
     state.game =
       await api(
@@ -1204,73 +1523,620 @@ async function loadGame() {
 
     render();
   } catch (error) {
-    localStorage.removeItem(
-      'token'
-    );
+    if (
+      error.message === 'Unauthorized'
+    ) {
+      logout();
+      return;
+    }
 
-    state.user = null;
-    state.game = null;
-    state.page = 'login';
-
-    render();
-
-    toast(
-      error.message ||
-      'Session expired'
-    );
+    toast(error.message);
   }
 }
 
+
+async function sendOtp() {
+  const phone =
+    $('#ident')?.value?.trim();
+
+  if (!phone) {
+    toast('Enter phone number');
+    return;
+  }
+
+  const button = $('#send');
+
+  try {
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Sending...';
+    }
+
+    await api('/api/send-otp', {
+      method: 'POST',
+      body: JSON.stringify({
+        phone,
+        purpose: 'register'
+      })
+    });
+
+    state.otpSent = true;
+    state.otpVerified = false;
+    state.otpProof = null;
+    state.otpPhone = phone;
+
+    const status =
+      $('#otpStatus');
+
+    if (status) {
+      status.textContent =
+        'OTP sent. Enter the 6-digit code and verify.';
+    }
+
+    toast('OTP sent successfully');
+
+  } catch (error) {
+    toast(error.message);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = 'Send';
+    }
+  }
+}
+
+
+async function verifyOtp() {
+  const phone =
+    $('#ident')?.value?.trim();
+
+  const otp =
+    $('#otp')?.value?.trim();
+
+  if (!phone) {
+    toast('Enter phone number');
+    return;
+  }
+
+  if (!/^\d{6}$/.test(otp)) {
+    toast('Enter exactly 6 digits');
+    return;
+  }
+
+  if (
+    state.otpPhone &&
+    state.otpPhone !== phone
+  ) {
+    toast('Phone number changed. Send OTP again.');
+    return;
+  }
+
+  const button =
+    $('#verifyOtp');
+
+  try {
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Verifying...';
+    }
+
+    const data =
+      await api('/api/verify-otp', {
+        method: 'POST',
+        body: JSON.stringify({
+          phone,
+          otp,
+          purpose: 'register'
+        })
+      });
+
+    state.otpVerified = true;
+    state.otpProof = data.proof;
+    state.otpPhone = phone;
+
+    const status =
+      $('#otpStatus');
+
+    if (status) {
+      status.textContent =
+        '✓ Mobile number verified successfully.';
+      status.style.color = '#07884f';
+      status.style.fontWeight = '800';
+    }
+
+    toast('OTP verified');
+
+  } catch (error) {
+    toast(error.message);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = 'Verify OTP';
+    }
+  }
+}
+
+
+async function registerUser() {
+  const phone =
+    $('#ident')?.value?.trim();
+
+  const password =
+    $('#pass')?.value || '';
+
+  const password2 =
+    $('#pass2')?.value || '';
+
+  const invite =
+    $('#invite')?.value?.trim() || '';
+
+  const agree =
+    $('#agree')?.checked;
+
+  if (!phone) {
+    toast('Enter phone number');
+    return;
+  }
+
+  if (password.length < 6) {
+    toast('Password must be at least 6 characters');
+    return;
+  }
+
+  if (password !== password2) {
+    toast('Passwords do not match');
+    return;
+  }
+
+  if (!state.otpVerified || !state.otpProof) {
+    toast('Verify OTP first');
+    return;
+  }
+
+  if (!agree) {
+    toast('Please accept Privacy Agreement');
+    return;
+  }
+
+  try {
+    const data =
+      await api('/api/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          phone,
+          password,
+          otpProof: state.otpProof,
+          invite
+        })
+      });
+
+    localStorage.setItem(
+      'token',
+      data.token
+    );
+
+    state.user = data.user;
+    state.page = 'home';
+    state.otpSent = false;
+    state.otpVerified = false;
+    state.otpProof = null;
+    state.otpPhone = '';
+
+    toast('Account created successfully');
+
+    await loadGame();
+
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+
+async function loginUser() {
+  const identifier =
+    $('#ident')?.value?.trim();
+
+  const password =
+    $('#pass')?.value || '';
+
+  if (!identifier || !password) {
+    toast('Enter login details');
+    return;
+  }
+
+  try {
+    const data =
+      await api('/api/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          identifier,
+          password
+        })
+      });
+
+    localStorage.setItem(
+      'token',
+      data.token
+    );
+
+    state.user = data.user;
+    state.page = 'home';
+
+    await loadGame();
+
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+
+function logout() {
+  localStorage.removeItem('token');
+
+  state.user = null;
+  state.page = 'login';
+  state.game = null;
+
+  render();
+}
+
+
+async function redeemGift() {
+  const code =
+    $('#gift')?.value?.trim();
+
+  if (!code) {
+    toast('Enter gift code');
+    return;
+  }
+
+  try {
+    const data =
+      await api('/api/gift/redeem', {
+        method: 'POST',
+        body: JSON.stringify({
+          code
+        })
+      });
+
+    state.user = data.user;
+
+    toast(
+      `Received ₹${(
+        Number(data.amount || 0) / 100
+      ).toFixed(2)}`
+    );
+
+    render();
+
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+
+async function loadGiftHistory() {
+  try {
+    const data =
+      await api('/api/gift/history');
+
+    const box = $('#gh');
+
+    if (!box) return;
+
+    if (!data.length) {
+      box.innerHTML =
+        `<div class="mini">No gift history.</div>`;
+      return;
+    }
+
+    box.innerHTML = data.map(item => `
+      <div class="adminrow">
+        <b>${esc(item.code)}</b>
+        <div class="small">
+          ₹${(
+            Number(item.amount || 0) / 100
+          ).toFixed(2)}
+        </div>
+      </div>
+    `).join('');
+
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+
 /* =========================
-   BIND
+   BET
+========================= */
+
+async function placeBet() {
+  if (!state.selection) {
+    toast('Choose a selection');
+    return;
+  }
+
+  try {
+    const data =
+      await api('/api/bet', {
+        method: 'POST',
+        body: JSON.stringify({
+          mode: state.mode,
+          betType: state.betType,
+          selection: state.selection,
+          amount: state.amount
+        })
+      });
+
+    state.user = data.user;
+    state.selection = null;
+
+    toast('Virtual bet placed');
+
+    await loadGame();
+
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+
+/* =========================
+   WALLET
+========================= */
+
+async function depositRequest() {
+  const amount =
+    Number($('#depamt')?.value || 0);
+
+  const utr =
+    $('#utr')?.value?.trim();
+
+  if (!Number.isInteger(amount) || amount < 100) {
+    toast('Minimum amount is ₹100');
+    return;
+  }
+
+  if (!/^\d{12}$/.test(utr)) {
+    toast('Enter 12-digit test UTR');
+    return;
+  }
+
+  try {
+    await api('/api/deposit-request', {
+      method: 'POST',
+      body: JSON.stringify({
+        amount: amount * 100,
+        utr
+      })
+    });
+
+    toast('Deposit request submitted');
+
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+
+async function withdrawRequest() {
+  const amount =
+    Number($('#wamt')?.value || 0);
+
+  if (!Number.isInteger(amount) || amount < 100) {
+    toast('Minimum amount is ₹100');
+    return;
+  }
+
+  try {
+    const data =
+      await api('/api/withdraw-request', {
+        method: 'POST',
+        body: JSON.stringify({
+          amount: amount * 100,
+          bankName: $('#bank')?.value || '',
+          accountNumber: $('#acc')?.value || '',
+          ifsc: $('#ifsc')?.value || '',
+          upiId: $('#upi')?.value || ''
+        })
+      });
+
+    state.user = data.user;
+
+    toast('Withdrawal request submitted');
+
+    render();
+
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+
+/* =========================
+   EVENT BINDING
 ========================= */
 
 function bind() {
 
+  /* Auth tabs */
+
+  document
+    .querySelectorAll('[data-auth]')
+    .forEach(button => {
+      button.onclick = () => {
+        state.authTab =
+          button.dataset.auth;
+
+        render();
+      };
+    });
+
+
+  /* Navigation */
+
   document
     .querySelectorAll('[data-page]')
     .forEach(button => {
-
       button.onclick = () => {
 
-        state.page =
-          button.dataset.page === 'home'
-            ? 'home'
-            : button.dataset.page;
+        const page =
+          button.dataset.page;
+
+        if (page === 'home') {
+          state.page = 'home';
+        } else {
+          state.page = page;
+        }
 
         render();
 
-        if (
-          state.page === 'home'
-        ) {
-          loadGame();
+        if (page === 'gift') {
+          loadGiftHistory();
         }
-
       };
-
     });
+
+
+  /* Register page */
+
+  $('#send')?.addEventListener(
+    'click',
+    sendOtp
+  );
+
+  $('#verifyOtp')?.addEventListener(
+    'click',
+    verifyOtp
+  );
+
+  $('#register')?.addEventListener(
+    'click',
+    registerUser
+  );
+
+  $('#backLogin')?.addEventListener(
+    'click',
+    () => {
+      state.page = 'login';
+      state.otpSent = false;
+      state.otpVerified = false;
+      state.otpProof = null;
+      state.otpPhone = '';
+      render();
+    }
+  );
+
+
+  /* OTP input: numbers only */
+
+  $('#otp')?.addEventListener(
+    'input',
+    event => {
+      event.target.value =
+        event.target.value
+          .replace(/\D/g, '')
+          .slice(0, 6);
+    }
+  );
+
+
+  /* Phone input */
+
+  $('#ident')?.addEventListener(
+    'input',
+    event => {
+
+      if (
+        state.page === 'register' &&
+        state.otpPhone &&
+        event.target.value.trim() !==
+          state.otpPhone
+      ) {
+        state.otpVerified = false;
+        state.otpProof = null;
+
+        const status =
+          $('#otpStatus');
+
+        if (status) {
+          status.textContent =
+            'Phone changed. Send a new OTP.';
+          status.style.color = '';
+        }
+      }
+    }
+  );
+
+
+  /* Login */
+
+  $('#login')?.addEventListener(
+    'click',
+    loginUser
+  );
+
+
+  /* Show password */
+
+  $('#show')?.addEventListener(
+    'click',
+    () => {
+      const pass = $('#pass');
+
+      if (!pass) return;
+
+      pass.type =
+        pass.type === 'password'
+          ? 'text'
+          : 'password';
+    }
+  );
+
+
+  /* Register */
+
+  $('#toRegister')?.addEventListener(
+    'click',
+    () => {
+      state.page = 'register';
+      render();
+    }
+  );
+
+
+  /* Forgot password */
+
+  $('#forgot')?.addEventListener(
+    'click',
+    () => {
+      toast(
+        'Password reset can be added next.'
+      );
+    }
+  );
+
+
+  /* Game modes */
 
   document
     .querySelectorAll('[data-mode]')
     .forEach(button => {
-
-      button.onclick = () => {
-
+      button.onclick = async () => {
         state.mode =
           button.dataset.mode;
 
-        state.selection = null;
-
-        loadGame();
-
+        await loadGame();
       };
-
     });
+
+
+  /* Bet type */
 
   document
     .querySelectorAll('[data-bettype]')
     .forEach(button => {
-
       button.onclick = () => {
 
         state.betType =
@@ -1280,1523 +2146,281 @@ function bind() {
           button.dataset.select;
 
         render();
-
       };
-
     });
+
+
+  /* Amount */
 
   document
     .querySelectorAll('[data-amt]')
     .forEach(button => {
-
       button.onclick = () => {
 
         state.amount =
-          Number(
-            button.dataset.amt
-          );
+          Number(button.dataset.amt);
 
         render();
-
       };
-
     });
 
-  /* BET */
 
-  if ($('#place')) {
+  /* Place bet */
 
-    $('#place').onclick =
-      async () => {
+  $('#place')?.addEventListener(
+    'click',
+    placeBet
+  );
 
-        try {
 
-          const data =
-            await api(
-              '/api/bet',
-              {
-                method: 'POST',
-                body: JSON.stringify({
-                  mode: state.mode,
-                  betType:
-                    state.betType,
-                  selection:
-                    state.selection,
-                  amount:
-                    state.amount
-                })
-              }
-            );
+  /* Gift */
 
-          state.user =
-            data.user;
+  $('#receive')?.addEventListener(
+    'click',
+    redeemGift
+  );
 
-          state.selection = null;
 
-          toast(
-            'Virtual bet placed'
-          );
+  /* Wallet */
 
-          await loadGame();
+  $('#dep')?.addEventListener(
+    'click',
+    depositRequest
+  );
 
-        } catch (error) {
+  $('#wd')?.addEventListener(
+    'click',
+    withdrawRequest
+  );
 
-          toast(
-            error.message
-          );
 
-        }
+  /* Logout */
 
-      };
-
-  }
-
-  /* LOGIN */
-
-  if ($('#login')) {
-
-    $('#login').onclick =
-      async () => {
-
-        const identifier =
-          $('#ident')
-            .value
-            .trim();
-
-        const password =
-          $('#pass').value;
-
-        if (
-          !identifier ||
-          !password
-        ) {
-          toast(
-            'Enter login details'
-          );
-
-          return;
-        }
-
-        try {
-
-          const data =
-            await api(
-              '/api/login',
-              {
-                method: 'POST',
-                body: JSON.stringify({
-                  identifier,
-                  password
-                })
-              }
-            );
-
-          localStorage.setItem(
-            'token',
-            data.token
-          );
-
-          state.user =
-            data.user;
-
-          state.page = 'home';
-
-          await loadGame();
-
-        } catch (error) {
-
-          toast(
-            error.message
-          );
-
-        }
-
-      };
-
-  }
-
-  /* REGISTER */
-
-  if ($('#toRegister')) {
-
-    $('#toRegister').onclick =
-      () => {
-
-        state.page =
-          'register';
-
-        state.otpSent = false;
-        state.otpVerified = false;
-        state.otpProof = null;
-
-        render();
-
-      };
-
-  }
-
-  if ($('#backLogin')) {
-
-    $('#backLogin').onclick =
-      () => {
-
-        state.page =
-          'login';
-
-        render();
-
-      };
-
-  }
-
-  /* LOGIN TAB */
-
-  document
-    .querySelectorAll('[data-auth]')
-    .forEach(button => {
-
-      button.onclick = () => {
-
-        state.authTab =
-          button.dataset.auth;
-
-        render();
-
-      };
-
-    });
-
-  /* SHOW PASSWORD */
-
-  if ($('#show')) {
-
-    $('#show').onclick =
-      () => {
-
-        const input =
-          $('#pass');
-
-        input.type =
-          input.type === 'password'
-            ? 'text'
-            : 'password';
-
-      };
-
-  }
-
-  /* FORGOT PASSWORD */
-
-  if ($('#forgot')) {
-
-    $('#forgot').onclick =
-      () => {
-
-        toast(
-          'Password reset: verify OTP first'
-        );
-
-        state.page =
-          'register';
-
-        render();
-
-      };
-
-  }
-
-  /* SEND OTP */
-
-  if ($('#send')) {
-
-    $('#send').onclick =
-      async () => {
-
-        const phone =
-          $('#ident')
-            .value
-            .trim();
-
-        if (!phone) {
-
-          toast(
-            'Enter your phone number'
-          );
-
-          return;
-
-        }
-
-        try {
-
-          await api(
-            '/api/send-otp',
-            {
-              method: 'POST',
-              body: JSON.stringify({
-                phone,
-                purpose:
-                  'register'
-              })
-            }
-          );
-
-          state.otpSent = true;
-          state.otpVerified = false;
-          state.otpProof = null;
-          state.otpPhone = phone;
-
-          if ($('#otpStatus')) {
-            $('#otpStatus')
-              .textContent =
-              'OTP sent. Enter the code and verify.';
-          }
-
-          toast(
-            'OTP sent successfully'
-          );
-
-        } catch (error) {
-
-          toast(
-            error.message
-          );
-
-        }
-
-      };
-
-  }
-
-  /* VERIFY OTP */
-
-  if ($('#verifyOtp')) {
-
-    $('#verifyOtp').onclick =
-      async () => {
-
-        const phone =
-          $('#ident')
-            .value
-            .trim();
-
-        const otp =
-          $('#otp')
-            .value
-            .trim();
-
-        if (!phone) {
-
-          toast(
-            'Enter phone number'
-          );
-
-          return;
-
-        }
-
-        if (!/^\d{6}$/.test(otp)) {
-
-          toast(
-            'Enter 6-digit OTP'
-          );
-
-          return;
-
-        }
-
-        try {
-
-          const data =
-            await api(
-              '/api/verify-otp',
-              {
-                method: 'POST',
-                body: JSON.stringify({
-                  phone,
-                  otp,
-                  purpose:
-                    'register'
-                })
-              }
-            );
-
-          state.otpVerified =
-            true;
-
-          state.otpProof =
-            data.proof;
-
-          state.otpPhone =
-            phone;
-
-          if ($('#otpStatus')) {
-            $('#otpStatus')
-              .textContent =
-              '✓ Phone verified successfully';
-          }
-
-          toast(
-            'OTP verified'
-          );
-
-        } catch (error) {
-
-          state.otpVerified =
-            false;
-
-          state.otpProof = null;
-
-          toast(
-            error.message
-          );
-
-        }
-
-      };
-
-  }
-
-  /* CREATE ACCOUNT */
-
-  if ($('#register')) {
-
-    $('#register').onclick =
-      async () => {
-
-        const phone =
-          $('#ident')
-            .value
-            .trim();
-
-        const password =
-          $('#pass').value;
-
-        const password2 =
-          $('#pass2').value;
-
-        if (!phone) {
-
-          toast(
-            'Enter phone number'
-          );
-
-          return;
-
-        }
-
-        if (
-          password.length < 6
-        ) {
-
-          toast(
-            'Password must be at least 6 characters'
-          );
-
-          return;
-
-        }
-
-        if (
-          password !==
-          password2
-        ) {
-
-          toast(
-            'Passwords do not match'
-          );
-
-          return;
-
-        }
-
-        if (
-          !state.otpVerified ||
-          !state.otpProof
-        ) {
-
-          toast(
-            'Please verify OTP first'
-          );
-
-          return;
-
-        }
-
-        if (
-          !$('#agree').checked
-        ) {
-
-          toast(
-            'Please accept Privacy Agreement'
-          );
-
-          return;
-
-        }
-
-        try {
-
-          const data =
-            await api(
-              '/api/register',
-              {
-                method: 'POST',
-                body: JSON.stringify({
-                  phone,
-                  password,
-                  otpProof:
-                    state.otpProof
-                })
-              }
-            );
-
-          localStorage.setItem(
-            'token',
-            data.token
-          );
-
-          state.user =
-            data.user;
-
-          state.page =
-            'home';
-
-          toast(
-            'Account created successfully'
-          );
-
-          await loadGame();
-
-        } catch (error) {
-
-          toast(
-            error.message
-          );
-
-        }
-
-      };
-
-  }
-
-  /* LOGOUT */
-
-  if ($('#logout')) {
-
-    $('#logout').onclick =
-      () => {
-
-        localStorage.removeItem(
-          'token'
-        );
-
-        state.user = null;
-        state.game = null;
-        state.selection = null;
-        state.page = 'login';
-
-        render();
-
-      };
-
-  }
-
-  /* DEPOSIT */
-
-  if ($('#dep')) {
-
-    $('#dep').onclick =
-      async () => {
-
-        const amount =
-          Number(
-            $('#depamt').value
-          );
-
-        const utr =
-          $('#utr')
-            .value
-            .trim();
-
-        try {
-
-          await api(
-            '/api/deposit-request',
-            {
-              method: 'POST',
-              body: JSON.stringify({
-                amount:
-                  Math.round(
-                    amount * 100
-                  ),
-                utr
-              })
-            }
-          );
-
-          toast(
-            'Deposit request sent'
-          );
-
-        } catch (error) {
-
-          toast(
-            error.message
-          );
-
-        }
-
-      };
-
-  }
-
-  /* WITHDRAW */
-
-  if ($('#wd')) {
-
-    $('#wd').onclick =
-      async () => {
-
-        try {
-
-          const data =
-            await api(
-              '/api/withdraw-request',
-              {
-                method: 'POST',
-                body: JSON.stringify({
-                  amount:
-                    Math.round(
-                      Number(
-                        $('#wamt').value
-                      ) * 100
-                    ),
-                  bankName:
-                    $('#bank').value,
-                  accountNumber:
-                    $('#acc').value,
-                  ifsc:
-                    $('#ifsc').value,
-                  upiId:
-                    $('#upi').value
-                })
-              }
-            );
-
-          state.user =
-            data.user;
-
-          toast(
-            'Withdrawal request sent'
-          );
-
-          render();
-
-        } catch (error) {
-
-          toast(
-            error.message
-          );
-
-        }
-
-      };
-
-  }
-
-  /* GIFT */
-
-  if ($('#receive')) {
-
-    $('#receive').onclick =
-      async () => {
-
-        const code =
-          $('#gift')
-            .value
-            .trim();
-
-        if (!code) {
-
-          toast(
-            'Enter gift code'
-          );
-
-          return;
-
-        }
-
-        try {
-
-          const data =
-            await api(
-              '/api/gift/redeem',
-              {
-                method: 'POST',
-                body: JSON.stringify({
-                  code
-                })
-              }
-            );
-
-          state.user =
-            data.user;
-
-          toast(
-            `${data.message} +₹${(
-              data.amount / 100
-            ).toFixed(2)}`
-          );
-
-          giftHistory();
-
-        } catch (error) {
-
-          toast(
-            error.message
-          );
-
-        }
-
-      };
-
-  }
-
-  if ($('#gh')) {
-    giftHistory();
-  }
-
-  /* ADMIN LOGIN */
-
-  if ($('#adminLogin')) {
-
-    $('#adminLogin').onclick =
-      async () => {
-
-        const username =
-          $('#au').value;
-
-        const password =
-          $('#ap').value;
-
-        try {
-
-          const data =
-            await fetch(
-              '/api/admin/login',
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type':
-                    'application/json'
-                },
-                body:
-                  JSON.stringify({
-                    username,
-                    password
-                  })
-              }
-            );
-
-          const result =
-            await data.json();
-
-          if (!data.ok) {
-            throw new Error(
-              result.error ||
-              'Admin login failed'
-            );
-          }
-
-          state.adminToken =
-            result.token;
-
-          state.page =
-            'admin';
-
-          render();
-
-          adminBody();
-
-        } catch (error) {
-
-          toast(
-            error.message
-          );
-
-        }
-
-      };
-
-  }
+  $('#logout')?.addEventListener(
+    'click',
+    logout
+  );
 }
 
+
 /* =========================
-   GIFT HISTORY
+   ADMIN BINDING
 ========================= */
 
-async function giftHistory() {
+document.addEventListener(
+  'click',
+  async event => {
 
-  const element = $('#gh');
-
-  if (!element) return;
-
-  try {
-
-    const history =
-      await api(
-        '/api/gift/history'
+    const tab =
+      event.target.closest(
+        '[data-admin-tab]'
       );
 
-    element.innerHTML =
-      history.length
-        ? history
-            .map(
-              item => `
-                <p>
-
-                  <b>
-                    Successfully received
-                  </b>
-
-                  <br>
-
-                  <span class="mini">
-                    ${new Date(
-                      item.claimed_at
-                    ).toLocaleString()}
-                    •
-                    ${esc(item.code)}
-                    •
-                    +₹${(
-                      item.amount / 100
-                    ).toFixed(2)}
-                  </span>
-
-                </p>
-              `
-            )
-            .join('')
-        : `
-          <div class="mini">
-            No gift claims yet.
-          </div>
-        `;
-
-  } catch {
-    element.innerHTML = `
-      <div class="mini">
-        Unable to load gift history.
-      </div>
-    `;
-  }
-}
-
-/* =========================
-   ADMIN API
-========================= */
-
-async function adminFetch(
-  url,
-  options = {}
-) {
-
-  if (!state.adminToken) {
-    throw new Error(
-      'Admin session expired'
-    );
-  }
-
-  const response =
-    await fetch(
-      url,
-      {
-        ...options,
-        headers: {
-          'Content-Type':
-            'application/json',
-          Authorization:
-            `Bearer ${state.adminToken}`,
-          ...(options.headers || {})
-        }
-      }
-    );
-
-  const data =
-    await response
-      .json()
-      .catch(() => ({}));
-
-  if (!response.ok) {
-
-    if (
-      response.status === 401 ||
-      response.status === 403
-    ) {
-
-      state.adminToken = null;
-      state.page =
-        'admin-login';
+    if (tab) {
+      state.adminTab =
+        tab.dataset.adminTab;
 
       render();
 
-    }
-
-    throw new Error(
-      data.error ||
-      'Admin request failed'
-    );
-
-  }
-
-  return data;
-}
-
-/* =========================
-   ADMIN BODY
-========================= */
-
-async function adminBody() {
-
-  const element =
-    $('#adminbody');
-
-  if (!element) return;
-
-  element.innerHTML = `
-    <div class="card">
-      Loading…
-    </div>
-  `;
-
-  try {
-
-    if (
-      state.adminTab ===
-      'overview'
-    ) {
-
-      const data =
-        await adminFetch(
-          '/api/admin/overview'
-        );
-
-      element.innerHTML = `
-        <div class="card">
-
-          <h3>
-            Admin Overview
-          </h3>
-
-          <div class="row">
-
-            <div>
-              <h3>
-                Active users
-              </h3>
-
-              <div class="balance">
-                ${data.users}
-              </div>
-            </div>
-
-            <div>
-              <h3>
-                Approved deposits
-              </h3>
-
-              <div class="balance">
-                ₹${(
-                  data.deposits / 100
-                ).toFixed(2)}
-              </div>
-            </div>
-
-            <div>
-              <h3>
-                Approved withdrawals
-              </h3>
-
-              <div class="balance">
-                ₹${(
-                  data.withdrawals / 100
-                ).toFixed(2)}
-              </div>
-            </div>
-
-            <div>
-              <h3>
-                Gross difference
-              </h3>
-
-              <div class="balance">
-                ₹${(
-                  data.profit / 100
-                ).toFixed(2)}
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      `;
-
       return;
     }
 
-    if (
-      state.adminTab ===
-      'requests'
-    ) {
-
-      const requests =
-        await adminFetch(
-          '/api/admin/requests'
-        );
-
-      element.innerHTML = `
-        <div
-          class="card tablewrap">
-
-          <table class="history">
-
-            <thead>
-
-              <tr>
-                <th>User</th>
-                <th>Type</th>
-                <th>Amount</th>
-                <th>Details</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-
-            </thead>
-
-            <tbody>
-
-              ${
-                requests.length
-                  ? requests
-                      .map(
-                        request => `
-                          <tr>
-
-                            <td>
-                              ${esc(
-                                request.user_code
-                              )}
-
-                              <br>
-
-                              <span class="mini">
-                                ${esc(
-                                  request.phone
-                                )}
-                              </span>
-                            </td>
-
-                            <td>
-                              ${esc(
-                                request.type
-                              )}
-                            </td>
-
-                            <td>
-                              ₹${(
-                                request.amount /
-                                100
-                              ).toFixed(2)}
-                            </td>
-
-                            <td>
-                              ${
-                                request.utr
-                                  ? `UTR:
-                                    ${esc(
-                                      request.utr
-                                    )}`
-                                  : ''
-                              }
-
-                              ${
-                                request.bank_name
-                                  ? `<br>Bank:
-                                    ${esc(
-                                      request.bank_name
-                                    )}`
-                                  : ''
-                              }
-
-                              ${
-                                request.account_number
-                                  ? `<br>A/C:
-                                    ${esc(
-                                      request.account_number
-                                    )}`
-                                  : ''
-                              }
-
-                              ${
-                                request.ifsc
-                                  ? `<br>IFSC:
-                                    ${esc(
-                                      request.ifsc
-                                    )}`
-                                  : ''
-                              }
-
-                              ${
-                                request.upi_id
-                                  ? `<br>UPI:
-                                    ${esc(
-                                      request.upi_id
-                                    )}`
-                                  : ''
-                              }
-                            </td>
-
-                            <td>
-                              ${esc(
-                                request.status
-                              )}
-                            </td>
-
-                            <td>
-
-                              ${
-                                request.status ===
-                                'Pending'
-                                  ? `
-                                    <button
-                                      class="btn primary"
-                                      data-req="${request.id}"
-                                      data-action="Approve">
-                                      Approve
-                                    </button>
-
-                                    <button
-                                      class="btn danger"
-                                      data-req="${request.id}"
-                                      data-action="Reject">
-                                      Reject
-                                    </button>
-                                  `
-                                  : '—'
-                              }
-
-                            </td>
-
-                          </tr>
-                        `
-                      )
-                      .join('')
-                  : `
-                    <tr>
-                      <td colspan="6">
-                        No requests found.
-                      </td>
-                    </tr>
-                  `
-              }
-
-            </tbody>
-
-          </table>
-
-        </div>
-      `;
-
-      document
-        .querySelectorAll(
-          '[data-req]'
-        )
-        .forEach(button => {
-
-          button.onclick =
-            async () => {
-
-              button.disabled =
-                true;
-
-              try {
-
-                await adminFetch(
-                  `/api/admin/request/${button.dataset.req}`,
-                  {
-                    method: 'POST',
-                    body:
-                      JSON.stringify({
-                        action:
-                          button.dataset
-                            .action
-                      })
-                  }
-                );
-
-                toast(
-                  'Request updated'
-                );
-
-                adminBody();
-
-              } catch (error) {
-
-                button.disabled =
-                  false;
-
-                toast(
-                  error.message
-                );
-
-              }
-
-            };
-
-        });
-
-      return;
-    }
-
-    /* GIFTS */
-
-    const gifts =
-      await adminFetch(
-        '/api/admin/gifts'
+    const action =
+      event.target.closest(
+        '[data-request-action]'
       );
 
-    element.innerHTML = `
-      <div class="card">
+    if (action) {
 
-        <h3>
-          Create gift code
-        </h3>
+      try {
 
-        <div class="row">
+        await adminApi(
+          `/api/admin/request/${action.dataset.requestId}`,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              action:
+                action.dataset.requestAction
+            })
+          }
+        );
 
-          <input
-            id="gc"
-            class="field"
-            maxlength="32"
-            placeholder="CODE">
+        toast('Request updated');
 
-          <input
-            id="ga"
-            class="field"
-            type="number"
-            min="1"
-            placeholder="₹ amount">
+        await loadAdminRequests();
 
-          <button
-            id="gcreate"
-            class="btn primary">
-            Create
-          </button>
+      } catch (error) {
+        toast(error.message);
+      }
 
-        </div>
-
-      </div>
-
-      <div
-        class="card tablewrap">
-
-        <table class="history">
-
-          <thead>
-
-            <tr>
-              <th>Code</th>
-              <th>Value</th>
-              <th>Active</th>
-              <th>Claims</th>
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            ${
-              gifts.length
-                ? gifts
-                    .map(
-                      gift => `
-                        <tr>
-
-                          <td>
-                            ${esc(
-                              gift.code
-                            )}
-                          </td>
-
-                          <td>
-                            ₹${(
-                              gift.amount /
-                              100
-                            ).toFixed(2)}
-                          </td>
-
-                          <td>
-                            ${
-                              gift.active
-                                ? 'Yes'
-                                : 'No'
-                            }
-                          </td>
-
-                          <td>
-                            ${gift.claims}
-                          </td>
-
-                        </tr>
-                      `
-                    )
-                    .join('')
-                : `
-                  <tr>
-                    <td colspan="4">
-                      No gifts found.
-                    </td>
-                  </tr>
-                `
-            }
-
-          </tbody>
-
-        </table>
-
-      </div>
-    `;
-
-    $('#gcreate').onclick =
-      async () => {
-
-        const code =
-          $('#gc')
-            .value
-            .trim();
-
-        const rupees =
-          Number(
-            $('#ga').value
-          );
-
-        if (!code) {
-
-          toast(
-            'Enter gift code'
-          );
-
-          return;
-
-        }
-
-        if (
-          !Number.isFinite(
-            rupees
-          ) ||
-          rupees <= 0
-        ) {
-
-          toast(
-            'Enter valid amount'
-          );
-
-          return;
-
-        }
-
-        try {
-
-          await adminFetch(
-            '/api/admin/gifts',
-            {
-              method: 'POST',
-              body:
-                JSON.stringify({
-                  code,
-                  amount:
-                    Math.round(
-                      rupees * 100
-                    )
-                })
-            }
-          );
-
-          toast(
-            'Gift code created'
-          );
-
-          adminBody();
-
-        } catch (error) {
-
-          toast(
-            error.message
-          );
-
-        }
-
-      };
-
-  } catch (error) {
-
-    element.innerHTML = `
-      <div class="card">
-        <p>
-          ${esc(
-            error.message
-          )}
-        </p>
-      </div>
-    `;
+      return;
+    }
 
   }
-}
+);
+
 
 /* =========================
-   ADMIN BIND
+   ADMIN LOGIN BINDING
 ========================= */
 
-function adminBind() {
+document.addEventListener(
+  'click',
+  async event => {
 
-  document
-    .querySelectorAll(
-      '[data-admintab]'
-    )
-    .forEach(button => {
+    if (
+      event.target.closest('#adminLogin')
+    ) {
 
-      button.onclick = () => {
+      const username =
+        $('#au')?.value?.trim();
 
-        state.adminTab =
-          button.dataset
-            .admintab;
+      const password =
+        $('#ap')?.value || '';
+
+      if (!username || !password) {
+        toast('Enter admin credentials');
+        return;
+      }
+
+      try {
+
+        const data =
+          await fetch(
+            '/api/admin/login',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type':
+                  'application/json'
+              },
+              body: JSON.stringify({
+                username,
+                password
+              })
+            }
+          );
+
+        const result =
+          await data.json();
+
+        if (!data.ok) {
+          throw new Error(
+            result.error ||
+            'Admin login failed'
+          );
+        }
+
+        state.adminToken =
+          result.token;
+
+        state.page = 'admin';
 
         render();
 
-        adminBody();
+      } catch (error) {
+        toast(error.message);
+      }
 
-      };
+      return;
+    }
 
-    });
 
-  if ($('#adminOut')) {
+    if (
+      event.target.closest('#adminLogout')
+    ) {
+      state.adminToken = null;
+      state.page = 'login';
+      render();
+    }
 
-    $('#adminOut').onclick =
-      () => {
 
-        state.adminToken = null;
-        state.page =
-          'admin-login';
+    if (
+      event.target.closest('#backUser')
+    ) {
+      state.page = 'login';
+      render();
+    }
 
-        render();
 
-      };
+    if (
+      event.target.closest('#createGift')
+    ) {
 
+      const code =
+        $('#giftCode')?.value?.trim();
+
+      const amount =
+        Number(
+          $('#giftAmount')?.value || 0
+        );
+
+      if (!code || !Number.isInteger(amount)) {
+        toast('Enter gift code and amount');
+        return;
+      }
+
+      try {
+
+        await adminApi(
+          '/api/admin/gifts',
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              code,
+              amount: amount * 100
+            })
+          }
+        );
+
+        toast('Gift created');
+
+        await loadAdminGifts();
+
+      } catch (error) {
+        toast(error.message);
+      }
+    }
   }
-}
+);
+
 
 /* =========================
-   START
+   STARTUP
 ========================= */
 
 async function start() {
 
-  const path =
-    location.pathname;
+  const token =
+    localStorage.getItem('token');
 
-  if (
-    path ===
-    '/admin-login'
-  ) {
-
-    state.page =
-      'admin-login';
-
+  if (!token) {
+    state.page = 'login';
     render();
-
     return;
   }
 
-  const token =
-    localStorage.getItem(
-      'token'
-    );
+  try {
 
-  if (token) {
+    state.user =
+      await api('/api/me');
 
-    try {
+    state.page = 'home';
 
-      state.user =
-        await api('/api/me');
+    render();
 
-      state.page =
-        'home';
+    await loadGame();
 
-      await loadGame();
+  } catch {
 
-      return;
+    localStorage.removeItem('token');
 
-    } catch {
+    state.user = null;
+    state.page = 'login';
 
-      localStorage.removeItem(
-        'token'
-      );
-
-      state.user = null;
-
-    }
-
+    render();
   }
-
-  render();
 }
 
-/* =========================
-   TIMER
-========================= */
-
-setInterval(
-  () => {
-
-    if (
-      state.page === 'home' &&
-      state.game
-    ) {
-
-      state.game.secondsLeft =
-        Math.max(
-          0,
-          Number(
-            state.game.secondsLeft
-          ) - 1
-        );
-
-      const timer =
-        $('.timer');
-
-      if (timer) {
-
-        timer.textContent =
-          formatTime(
-            state.game.secondsLeft
-          );
-
-      }
-
-      if (
-        state.game.secondsLeft ===
-        0
-      ) {
-
-        loadGame();
-
-      }
-
-    }
-
-  },
-  1000
-);
 
 start();
